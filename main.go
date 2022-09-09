@@ -27,17 +27,27 @@ func main() {
 			log.Fatal(err)
 		}
 
+		//connect to db
+		db, err := db_connector.Connect("test_db")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		for _, f := range files {
 			if f.IsDir() {
 				continue
 			}
-			db, err := db_connector.Connect("test_db")
-			if err != nil {
-				log.Fatal(err)
+
+			action := func() error {
+				err := file_processor.ReadFile(f.Name(), "\t", db)
+				if err != nil {
+					return err
+				}
+				return nil
 			}
 			jobs = append(jobs, queue.Job{
 				Name:   fmt.Sprintf("Importing file to db : %s", f.Name()),
-				Action: file_processor.ReadFile(f.Name(), "\t", db),
+				Action: action,
 			})
 
 		}

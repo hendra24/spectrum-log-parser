@@ -15,12 +15,12 @@ const DATA_LOGS_PATH = "H:\\GO\\mybefail\\logs\\20220328\\"
 const DATA_WAREHOUSE_PATH = "H:\\GO\\mybefail\\warehouse\\"
 
 /*
-func ProcessFile(fname string) error {
+func ProcessFile() error {
 	//read file from pool folder
 	files, err := ioutil.ReadDir(DATA_LOGS_PATH)
 
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
 		return err
 	}
 
@@ -30,7 +30,8 @@ func ProcessFile(fname string) error {
 		}
 		db, err := db_connector.Connect("test_db")
 		if err != nil {
-			log.Fatal(err)
+			//log.Fatal(err)
+			return err
 		}
 		readFile(f.Name(), "\t", db)
 	}

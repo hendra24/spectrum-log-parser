@@ -2,7 +2,6 @@ package file_processor
 
 import (
 	"bufio"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -15,12 +14,14 @@ import (
 const DATA_LOGS_PATH = "H:\\GO\\mybefail\\logs\\20220328\\"
 const DATA_WAREHOUSE_PATH = "H:\\GO\\mybefail\\warehouse\\"
 
-func ProcessFile() {
+/*
+func ProcessFile(fname string) error {
 	//read file from pool folder
 	files, err := ioutil.ReadDir(DATA_LOGS_PATH)
 
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	for _, f := range files {
@@ -33,10 +34,10 @@ func ProcessFile() {
 		}
 		readFile(f.Name(), "\t", db)
 	}
-
+	return nil
 }
-
-func readFile(fname string, sep string, db *mongo.Database) {
+*/
+func ReadFile(fname string, sep string, db *mongo.Database) error {
 	//count execution tme
 	start := time.Now()
 
@@ -44,6 +45,7 @@ func readFile(fname string, sep string, db *mongo.Database) {
 	file, err := os.Open(DATA_LOGS_PATH + fname)
 	if err != nil {
 		log.Fatal("Error when read file :" + err.Error())
+		return err
 	}
 	defer file.Close()
 	log.Println("Processing file : ", fname)
@@ -64,12 +66,15 @@ func readFile(fname string, sep string, db *mongo.Database) {
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	duration := time.Since(start)
 	log.Println("Done Processing: ", fname, "in", duration.Seconds(), "second")
 	DeleteCollection(db)
 	log.Println("DB SAMPAH DI Hapus")
+
+	return nil
 }
 
 func saveToFile(s []string, fname string) {

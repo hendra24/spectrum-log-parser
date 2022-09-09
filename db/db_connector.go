@@ -49,6 +49,7 @@ func Connect(db_name string) (*mongo.Database, error) {
 	}
 
 	//return the database that we uses
+	log.Println("Successfull connect to db " + db_name)
 	return client.Database(db_name), nil
 }
 

@@ -11,49 +11,60 @@ import (
 	"github.com/hendra24/spectrum-log-parser/file_processor"
 )
 
-const DATA_LOGS_PATH = "H:\\GO\\mybefail\\logs\\20220328\\"
-
 func main() {
 
 	//initialize new queue
 	fileToProcess := queue.NewQueue("Parser File to DB")
-	var jobs []queue.Job
 
-	//check directory folder have file ? if y
+	//check directory folder have file ? if y do something
 	for {
-		log.Println("Checking log in path " + string(DATA_LOGS_PATH))
-		files, err := ioutil.ReadDir(DATA_LOGS_PATH)
+		var jobs []queue.Job
+		log.Println("Checking log in path " + string(file_processor.DATA_LOGS_PATH))
+		files, err := ioutil.ReadDir(file_processor.DATA_LOGS_PATH)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		//connect to db
-		db, err := db_connector.Connect("test_db")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, f := range files {
-			if f.IsDir() {
-				continue
+		// check if theris file or not in directory
+		if len(files) != 0 {
+			//connect to db
+			db, err := db_connector.Connect("my_db")
+			if err != nil {
+				log.Fatal(err)
 			}
 
-			action := func() error {
-				err := file_processor.ReadFile(f.Name(), "\t", db)
-				if err != nil {
-					return err
+			for _, f := range files {
+				if f.IsDir() {
+					continue
 				}
-				return nil
+
+				file_name := f.Name()
+
+				var action = func() error {
+					err := file_processor.ReadFile(file_name, "\t", db)
+					if err != nil {
+						return err
+					}
+					log.Println("JANCOOKKKKK")
+					return nil
+
+				}
+
+				jobs = append(jobs, queue.Job{
+					Name:   fmt.Sprintf("Job for file %s", f.Name()),
+					Action: action,
+				})
 			}
-			jobs = append(jobs, queue.Job{
-				Name:   fmt.Sprintf("Importing file to db : %s", f.Name()),
-				Action: action,
-			})
 
+			//add jobs to queue
+			fileToProcess.AddJobs(jobs)
+
+		} else {
+			// if folder empty print
+			log.Println("Directrory empty... no file to process")
+			//sleep program for 10 sec
+			time.Sleep(5 * time.Second)
+			continue
 		}
-
-		//add jobs to queue
-		fileToProcess.AddJobs(jobs)
 
 		//define queue worker that will execute our queue
 		worker := queue.NewWorker(fileToProcess)
@@ -61,8 +72,6 @@ func main() {
 		//execute job in queue
 		worker.DoWork()
 
-		//sleep program for 10 sec
-		time.Sleep(10 * time.Second)
 	}
 
 }

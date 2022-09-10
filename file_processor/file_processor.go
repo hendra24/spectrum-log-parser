@@ -2,6 +2,8 @@ package file_processor
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -41,14 +43,12 @@ func ProcessFile() error {
 func ReadFile(fname string, sep string, db *mongo.Database) error {
 	//count execution tme
 	start := time.Now()
-
 	//acces log file
 	file, err := os.Open(DATA_LOGS_PATH + fname)
 	if err != nil {
-		log.Fatal("Error when read file :" + err.Error())
 		return err
 	}
-	defer file.Close()
+
 	log.Println("Processing file : ", fname)
 	scanner := bufio.NewScanner(file)
 
@@ -66,14 +66,18 @@ func ReadFile(fname string, sep string, db *mongo.Database) error {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
 		return err
 	}
 
 	duration := time.Since(start)
-	log.Println("Done Processing: ", fname, "in", duration.Seconds(), "second")
-	DeleteCollection(db)
-	log.Println("DB SAMPAH DI Hapus")
+	defer log.Println("Done Processing: ", fname, "in", duration.Seconds(), "second")
+	//force reading file to close to avoid infinite
+	file.Close()
+	err = moveFile(DATA_LOGS_PATH+fname, DATA_WAREHOUSE_PATH+fname)
+	if err != nil {
+		return err
+	}
+	//log.Println("DB SAMPAH DI Hapus")
 
 	return nil
 }
@@ -92,5 +96,29 @@ func saveToFile(s []string, fname string) {
 		f.Close() // inore error; Write error takes precedence
 		log.Fatal(err)
 	}
-	defer f.Close()
+	f.Close()
+}
+
+func moveFile(sourcePath, destPath string) error {
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Couldn't open source file: %s", err)
+	}
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("Couldn't open dest file: %s", err)
+	}
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("Writing to output file failed: %s", err)
+	}
+	// The copy was successful, so now delete the original file
+	err = os.Remove(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Failed removing original file: %s", err)
+	}
+	return nil
 }

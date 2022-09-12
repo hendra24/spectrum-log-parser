@@ -55,8 +55,12 @@ func ReadFile(ctx context.Context, fname string, sep string, db *mongo.Database)
 		return err
 	}
 	//DELETE UNSUEFUL LOG
-	DeleteCollection(ctx, db)
-	log.Println("DB SAMPAH DI Hapus")
+	err = DeleteCollection(ctx, db)
+	if err != nil {
+		return err
+	} else {
+		log.Println("DB SAMPAH DI Hapus")
+	}
 
 	return nil
 }

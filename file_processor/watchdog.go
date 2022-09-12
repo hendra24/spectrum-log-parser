@@ -16,4 +16,5 @@ func DeleteCollection(ctx context.Context, db *mongo.Database) error {
 			return err
 		}
 	}
+	return nil
 }

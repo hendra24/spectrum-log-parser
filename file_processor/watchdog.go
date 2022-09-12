@@ -2,6 +2,7 @@ package file_processor
 
 import (
 	"context"
+	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -11,6 +12,9 @@ var Sampah = []string{"Comm", "Comms", "IFS"}
 func DeleteCollection(ctx context.Context, db *mongo.Database) {
 
 	for i, _ := range Sampah {
-		db.Collection(Sampah[i]).Drop(ctx)
+		err := db.Collection(Sampah[i]).Drop(ctx)
+		if err != nil {
+			log.Println(err.Error())
+		}
 	}
 }

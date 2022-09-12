@@ -13,12 +13,14 @@ import (
 )
 
 func main() {
-	var ctx = context.Background()
+
 	//initialize new queue
 	fileToProcess := queue.NewQueue("Parser File to DB")
 
 	//check directory folder have file ? if y do something
 	for {
+		//context for process
+		ctx := context.Background()
 		var jobs []queue.Job
 		log.Println("Checking log in path " + string(file_processor.DATA_LOGS_PATH))
 		files, err := ioutil.ReadDir(file_processor.DATA_LOGS_PATH)

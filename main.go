@@ -27,6 +27,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		// check if theris file or not in directory
 		if len(files) != 0 {
 			//connect to db
@@ -34,7 +35,6 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-
 			for _, f := range files {
 				if f.IsDir() {
 					continue
@@ -43,10 +43,12 @@ func main() {
 				file_name := f.Name()
 
 				var action = func() error {
-					err := file_processor.ReadFile(ctx, file_name, "\t", db)
+
+					err = file_processor.ReadFile(ctx, file_name, "\t", db)
 					if err != nil {
 						return err
 					}
+
 					return nil
 
 				}
@@ -60,19 +62,20 @@ func main() {
 			//add jobs to queue
 			fileToProcess.AddJobs(jobs)
 
+			//define queue worker that will execute our queue
+			worker := queue.NewWorker(fileToProcess)
+
+			//execute job in queue
+			worker.DoWork()
+
 		} else {
 			// if folder empty print
 			log.Println("Directrory empty... no file to process")
-			//sleep program for 10 sec
-			time.Sleep(5 * time.Second)
+			//sleep program for 30 sec
+			time.Sleep(30 * time.Second)
 			continue
 		}
 
-		//define queue worker that will execute our queue
-		worker := queue.NewWorker(fileToProcess)
-
-		//execute job in queue
-		worker.DoWork()
 	}
 
 }

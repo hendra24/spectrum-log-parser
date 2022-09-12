@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-
+	var ctx = context.Background()
 	//initialize new queue
 	fileToProcess := queue.NewQueue("Parser File to DB")
 
@@ -27,7 +28,7 @@ func main() {
 		// check if theris file or not in directory
 		if len(files) != 0 {
 			//connect to db
-			db, err := db_connector.Connect("my_db")
+			db, err := db_connector.Connect(ctx, "my_db")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -40,11 +41,10 @@ func main() {
 				file_name := f.Name()
 
 				var action = func() error {
-					err := file_processor.ReadFile(file_name, "\t", db)
+					err := file_processor.ReadFile(ctx, file_name, "\t", db)
 					if err != nil {
 						return err
 					}
-					log.Println("JANCOOKKKKK")
 					return nil
 
 				}
@@ -71,7 +71,6 @@ func main() {
 
 		//execute job in queue
 		worker.DoWork()
-
 	}
 
 }

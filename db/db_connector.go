@@ -11,8 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var ctx = context.Background()
-
 type student struct {
 	Name  string `bson:"name"`
 	Grade int    `bson:"grade"`
@@ -35,7 +33,8 @@ type Spectrum struct {
 	MeCl     string    `bson:"mecl"`
 }
 
-func Connect(db_name string) (*mongo.Database, error) {
+func Connect(ctx context.Context, db_name string) (*mongo.Database, error) {
+
 	clientOptions := options.Client()
 	clientOptions.ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.NewClient(clientOptions)
@@ -53,9 +52,9 @@ func Connect(db_name string) (*mongo.Database, error) {
 	return client.Database(db_name), nil
 }
 
-func InsertToDB(db *mongo.Database, data []string) {
+func InsertToDB(ctx context.Context, db *mongo.Database, data []string) {
 
-	_, val := checkCollectionExist(db, data[2])
+	_, val := checkCollectionExist(ctx, db, data[2])
 
 	if val {
 		t, err1 := ConvertTimeToFormat(data[0])
@@ -82,7 +81,7 @@ func InsertToDB(db *mongo.Database, data []string) {
 	}
 }
 
-func checkCollectionExist(db *mongo.Database, str string) (error, bool) {
+func checkCollectionExist(ctx context.Context, db *mongo.Database, str string) (error, bool) {
 
 	names, err := db.ListCollectionNames(ctx, bson.D{{"name", str}})
 

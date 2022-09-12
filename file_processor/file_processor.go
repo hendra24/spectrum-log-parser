@@ -2,6 +2,7 @@ package file_processor
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -16,31 +17,7 @@ import (
 const DATA_LOGS_PATH = "H:\\GO\\mybefail\\logs\\20220328\\"
 const DATA_WAREHOUSE_PATH = "H:\\GO\\mybefail\\warehouse\\"
 
-/*
-func ProcessFile() error {
-	//read file from pool folder
-	files, err := ioutil.ReadDir(DATA_LOGS_PATH)
-
-	if err != nil {
-		//log.Fatal(err)
-		return err
-	}
-
-	for _, f := range files {
-		if f.IsDir() {
-			continue
-		}
-		db, err := db_connector.Connect("test_db")
-		if err != nil {
-			//log.Fatal(err)
-			return err
-		}
-		readFile(f.Name(), "\t", db)
-	}
-	return nil
-}
-*/
-func ReadFile(fname string, sep string, db *mongo.Database) error {
+func ReadFile(ctx context.Context, fname string, sep string, db *mongo.Database) error {
 	//count execution tme
 	start := time.Now()
 	//acces log file
@@ -61,7 +38,7 @@ func ReadFile(fname string, sep string, db *mongo.Database) error {
 		if len(datas) == 13 && len(datas[0]) >= 19 && datas[2] != "" {
 			//saveToFile(datas, data[2])
 			//save file to mongoo db
-			db_connector.InsertToDB(db, datas)
+			db_connector.InsertToDB(ctx, db, datas)
 		}
 	}
 
@@ -77,7 +54,9 @@ func ReadFile(fname string, sep string, db *mongo.Database) error {
 	if err != nil {
 		return err
 	}
-	//log.Println("DB SAMPAH DI Hapus")
+	//DELETE UNSUEFUL LOG
+	DeleteCollection(ctx, db)
+	log.Println("DB SAMPAH DI Hapus")
 
 	return nil
 }

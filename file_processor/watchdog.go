@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var Sampah = []string{"Comm", "Comms", "IFS"}
+var Sampah = []string{"Comm", "Comms ", "IFS "}
 
 func DeleteCollection(ctx context.Context, db *mongo.Database) error {
 
